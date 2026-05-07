@@ -1,0 +1,12 @@
+{
+  "name": "Prospector Deep Search",
+  "description": "Ferramenta avançada de automação de prospecção com busca por grid de coordenadas e extração de leads via IA.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "AI-powered lead extraction",
+    "Coordinate grid search logic",
+    "Excel data export"
+  ]
+}
