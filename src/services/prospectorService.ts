@@ -70,20 +70,34 @@ export async function geocodeCity(city: string): Promise<{ lat: number; lng: num
   });
 }
 
+function normalizeId(name: string, phone: string): string {
+  const n = name.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+  const p = phone.replace(/\D/g, '');
+  return `${n}-${p}`;
+}
+
 export async function findLeadsInGrid(
   config: SearchConfig,
   point: { lat: number; lng: number },
+  seenNames: string[],
   onFound: (leads: Lead[]) => void
 ) {
   const model = config.model || DEFAULT_MODEL;
 
+  const exclusion = seenNames.length > 0
+    ? `\nDo NOT return any of these already-found businesses: ${seenNames.slice(0, 30).join(', ')}.`
+    : '';
+
   const prompt = `
-    List 5 real businesses in the "${config.niche}" niche located in ${config.city}, Brazil,
+    List 10 real, existing businesses in the "${config.niche}" niche located in ${config.city}, Brazil,
     near the coordinates lat: ${point.lat.toFixed(4)}, lng: ${point.lng.toFixed(4)}.
-    Use your knowledge of this city and region to return realistic and plausible businesses.
-    Include real-sounding Brazilian phone numbers (format: +55 XX XXXX-XXXX), full street addresses in that area,
-    website URLs, Google Maps ratings (3.5-5.0), and number of reviews.
-    ${config.deepExtract ? "Also include realistic contact email addresses for each business." : ""}
+    Only include businesses you have actual knowledge of — real names, real addresses, real phone numbers.
+    Do NOT invent, fabricate, or guess any field. If you do not know the website, email, or social media of a business, leave that field empty or omit it entirely.
+    Include Google Maps ratings (3.5-5.0) and review counts only if known.
+    ${config.deepExtract ? "Include email addresses only if you have actual confirmed knowledge of them. Do not generate or guess emails." : ""}
+    Prioritize businesses near the given coordinates, not just the most famous ones in the city.${exclusion}
     Return results as JSON matching the defined schema. All data must be in Portuguese (BR).
   `;
 
@@ -94,17 +108,16 @@ export async function findLeadsInGrid(
       config: {
         responseMimeType: "application/json",
         responseSchema: leadSchema,
-        temperature: 0.1,
+        temperature: 0.3,
       },
     });
 
     const data = JSON.parse(response.text || '{ "companies": [] }');
-    const leads: Lead[] = (data.companies || []).map((l: any, idx: number) => ({
+    const leads: Lead[] = (data.companies || []).map((l: any) => ({
       ...l,
-      id: `${l.name}-${l.phone}-${point.lat}-${point.lng}-${idx}`
-        .replace(/\s+/g, '-')
-        .toLowerCase()
-        .replace(/[^\w-]/g, ''),
+      website: l.website || "",
+      emails: l.emails?.filter((e: string) => e && e.includes("@")) ?? [],
+      id: normalizeId(l.name ?? '', l.phone ?? ''),
     }));
 
     if (leads.length > 0) {

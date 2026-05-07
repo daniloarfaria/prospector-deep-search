@@ -13,6 +13,8 @@ import { Lead, SearchConfig, SearchProgress } from "./types";
 import { SearchControls } from "./components/SearchControls";
 import { LeadTable } from "./components/LeadTable";
 import { GridVisualizer } from "./components/GridVisualizer";
+import { UnifiedCNPJLookup } from "./components/UnifiedCNPJLookup";
+import { WhoisLookup } from "./components/WhoisLookup";
 import { generateGrid, formatNumber, cn } from "./lib/utils";
 import { geocodeCity, findLeadsInGrid } from "./services/prospectorService";
 
@@ -27,6 +29,7 @@ const INITIAL_PROGRESS: SearchProgress = {
 };
 
 export default function App() {
+  const [tab, setTab] = useState<"prospector" | "cnpj" | "whois">("prospector");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [config, setConfig] = useState<SearchConfig>({
     niche: "Escritórios de Advocacia",
@@ -78,11 +81,11 @@ export default function App() {
           message: `Escaneando quadrante ${i + 1}/${points.length}...`,
         }));
 
-        if (i > 0) await new Promise(r => setTimeout(r, 1000));
+        if (i > 0) await new Promise(r => setTimeout(r, 600));
 
         if (stopRef.current) break;
 
-        await findLeadsInGrid(config, points[i], (newLeads) => {
+        await findLeadsInGrid(config, points[i], allLeads.map(l => l.name), (newLeads) => {
           totalRaw += newLeads.length;
           const uniqueNew = newLeads.filter(l => {
             if (seenIds.has(l.id)) return false;
@@ -156,9 +159,26 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col font-sans">
       <header className="h-16 bg-linear-to-r from-[#4F46E5] to-[#7C3AED] shadow-md px-6 flex items-center justify-between text-white shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="font-black text-2xl tracking-tighter">PROSPECTOR</span>
-          <span className="bg-white/20 text-[10px] font-medium px-2 py-1 rounded-full uppercase tracking-wider">v2.4 DeepScan</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <span className="font-black text-2xl tracking-tighter">PROSPECTOR</span>
+            <span className="bg-white/20 text-[10px] font-medium px-2 py-1 rounded-full uppercase tracking-wider">v2.4 DeepScan</span>
+          </div>
+          <div className="flex bg-white/10 rounded-lg p-0.5 gap-0.5">
+            {([
+              { id: "prospector", label: "Maps" },
+              { id: "cnpj",       label: "Consulta CNPJ" },
+              { id: "whois",      label: "WHOIS" },
+            ] as const).map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={cn("px-3 py-1 rounded-md text-xs font-bold transition-all", tab === id ? "bg-white text-primary" : "text-white/70 hover:text-white")}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex items-center gap-6 text-sm">
           <div className="flex items-center gap-2">
@@ -176,7 +196,9 @@ export default function App() {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        <aside className="w-[260px] bg-sidebar border-r border-border-subtle shrink-0">
+        {tab === "cnpj"  && <div className="flex-1 overflow-auto bg-main-bg"><UnifiedCNPJLookup /></div>}
+        {tab === "whois" && <div className="flex-1 overflow-auto bg-main-bg"><WhoisLookup /></div>}
+        {tab === "prospector" && <><aside className="w-[260px] bg-sidebar border-r border-border-subtle shrink-0">
           <SearchControls
             config={config}
             onChange={setConfig}
@@ -239,7 +261,7 @@ export default function App() {
               <LeadTable leads={leads} />
             </div>
           </section>
-        </main>
+        </main></>}
       </div>
 
       <footer className="h-12 bg-white border-t border-border-subtle px-6 flex items-center gap-4 shrink-0">

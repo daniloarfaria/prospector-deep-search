@@ -16,9 +16,31 @@ export default defineConfig(({mode}) => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+      proxy: {
+        '/proxy/rdap': {
+          target: 'https://rdap.registro.br',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/proxy\/rdap/, ''),
+        },
+        '/proxy/cnpjws': {
+          target: 'https://publica.cnpj.ws',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/proxy\/cnpjws/, ''),
+        },
+        '/proxy/casadados': {
+          target: 'https://api.casadosdados.com.br',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/proxy\/casadados/, ''),
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
+              if (env.CASA_DADOS_API_KEY) {
+                proxyReq.setHeader('api-key', env.CASA_DADOS_API_KEY);
+              }
+            });
+          },
+        },
+      },
     },
   };
 });

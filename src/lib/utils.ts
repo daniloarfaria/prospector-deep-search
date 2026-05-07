@@ -19,19 +19,17 @@ export function formatNumber(num: number) {
  */
 export function generateGrid(centerLat: number, centerLng: number, radiusKm: number, stepKm: number) {
   const points = [];
-  // Approx conversion: 1 degree lat = 111km
   const latStep = stepKm / 111;
-  // Approx conversion: 1 degree lng = 111 * cos(lat)
   const lngStep = stepKm / (111 * Math.cos(centerLat * Math.PI / 180));
+  const steps = Math.ceil(radiusKm / stepKm);
 
-  const stepsLat = Math.ceil(radiusKm / stepKm);
-  const stepsLng = Math.ceil(radiusKm / stepKm);
-
-  for (let i = -stepsLat; i <= stepsLat; i++) {
-    for (let j = -stepsLng; j <= stepsLng; j++) {
+  for (let i = -steps; i <= steps; i++) {
+    for (let j = -steps; j <= steps; j++) {
+      // Euclidean distance in km — skip points outside the circle
+      if (Math.sqrt((i * stepKm) ** 2 + (j * stepKm) ** 2) > radiusKm) continue;
       points.push({
         lat: centerLat + i * latStep,
-        lng: centerLng + j * lngStep
+        lng: centerLng + j * lngStep,
       });
     }
   }
