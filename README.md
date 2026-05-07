@@ -4,88 +4,133 @@ Ferramenta de prospecção de leads com busca por grade geográfica usando a API
 
 ---
 
-## Pré-requisito: Chave de API Gemini
+## Antes de começar — Obtenha sua chave de API (gratuita)
 
-Antes de instalar, obtenha sua chave gratuita em:
-**https://aistudio.google.com/apikey**
+1. Acesse: **https://aistudio.google.com/apikey**
+2. Faça login com uma conta Google
+3. Clique em **"Create API Key"**
+4. Copie a chave gerada (você vai precisar dela na instalação)
 
 ---
 
-## Instalação — Mac
+## Instalação no Mac
 
-Abra o **Terminal** e execute os comandos abaixo, um por vez:
+### Passo 1 — Abra o Terminal
+
+Pressione **Command (⌘) + Espaço**, digite `Terminal` e pressione Enter.
+
+### Passo 2 — Instale o Git (se ainda não tiver)
+
+Cole o comando abaixo no Terminal e pressione Enter:
 
 ```bash
-# 1. Clonar o repositório
-git clone https://github.com/SEU_USUARIO/prospector-deep-search.git
-cd prospector-deep-search
+xcode-select --install
+```
 
-# 2. Rodar o setup (instala Node.js se necessário, instala dependências e cria o .env)
+> Uma janela vai aparecer pedindo para instalar as ferramentas de linha de comando. Clique em **Instalar**. Se aparecer "software already installed", pode pular esta etapa.
+
+### Passo 3 — Baixe e configure o projeto
+
+Cole cada linha abaixo no Terminal e pressione Enter:
+
+```bash
+git clone https://github.com/daniloarfaria/prospector-deep-search.git
+cd prospector-deep-search
 chmod +x setup.sh && ./setup.sh
 ```
 
-Após o setup, abra o arquivo `.env` e substitua `MY_GEMINI_API_KEY` pela sua chave:
+> O setup instala tudo automaticamente. Pode demorar alguns minutos.
+
+### Passo 4 — Configure sua chave de API
+
+Ao final do setup, um arquivo chamado `.env` será criado na pasta do projeto. Abra-o com qualquer editor de texto e altere esta linha:
+
+```
+GEMINI_API_KEY="MY_GEMINI_API_KEY"
+```
+
+Substituindo pela sua chave:
 
 ```
 GEMINI_API_KEY="sua_chave_aqui"
 ```
 
+Salve o arquivo.
+
+### Passo 5 — Inicie o app
+
 ```bash
-# 3. Iniciar o app
 ./run.sh
 ```
 
-Acesse **http://localhost:3000** no navegador.
+Abra o navegador e acesse: **http://localhost:3000**
+
+Para parar o app, pressione **Ctrl + C** no Terminal.
 
 ---
 
-## Instalação — Windows
+## Instalação no Windows
 
-Abra o **Prompt de Comando** (cmd) ou **PowerShell** e execute:
+### Passo 1 — Instale o Git (se ainda não tiver)
+
+1. Acesse: **https://git-scm.com/download/win**
+2. Baixe e instale o arquivo `.exe`
+3. Durante a instalação, clique em **Next** em todas as telas (as opções padrão funcionam bem)
+
+### Passo 2 — Abra o Prompt de Comando
+
+Pressione **Windows + R**, digite `cmd` e pressione Enter.
+
+### Passo 3 — Baixe e configure o projeto
+
+Cole cada linha abaixo no Prompt de Comando e pressione Enter:
 
 ```cmd
-# 1. Clonar o repositório
-git clone https://github.com/SEU_USUARIO/prospector-deep-search.git
+git clone https://github.com/daniloarfaria/prospector-deep-search.git
 cd prospector-deep-search
-
-# 2. Rodar o setup
 setup.bat
 ```
 
-O setup vai instalar o Node.js automaticamente (via winget) e abrirá o arquivo `.env` no Bloco de Notas. Substitua `MY_GEMINI_API_KEY` pela sua chave e salve.
+> O setup vai instalar o Node.js automaticamente e abrirá o arquivo `.env` no Bloco de Notas.
+
+### Passo 4 — Configure sua chave de API
+
+No Bloco de Notas que abriu, altere esta linha:
+
+```
+GEMINI_API_KEY="MY_GEMINI_API_KEY"
+```
+
+Substituindo pela sua chave:
+
+```
+GEMINI_API_KEY="sua_chave_aqui"
+```
+
+Salve com **Ctrl + S** e feche o Bloco de Notas.
+
+### Passo 5 — Inicie o app
 
 ```cmd
-# 3. Iniciar o app
 run.bat
 ```
 
-Acesse **http://localhost:3000** no navegador.
+Abra o navegador e acesse: **http://localhost:3000**
+
+Para parar o app, pressione **Ctrl + C** no Prompt de Comando.
 
 ---
 
-## Requisitos
+## Problemas comuns
 
-| Requisito | Versão mínima |
-|-----------|--------------|
-| Node.js   | 18+          |
-| Git       | qualquer     |
+**"git não é reconhecido como comando"**
+→ Instale o Git conforme o Passo 1 do seu sistema e abra um novo terminal.
 
-> Os scripts `setup.sh` (Mac) e `setup.bat` (Windows) instalam o Node.js automaticamente se não estiver presente.
+**"Permissão negada" no Mac**
+→ Execute `chmod +x setup.sh run.sh` e tente novamente.
 
----
+**O app não abre no navegador**
+→ Verifique se a `GEMINI_API_KEY` está corretamente configurada no arquivo `.env`.
 
-## Git não instalado?
-
-**Mac:** `xcode-select --install`
-
-**Windows:** Baixe em https://git-scm.com/download/win
-
----
-
-## Comandos úteis
-
-```bash
-npm run dev      # inicia em modo desenvolvimento
-npm run build    # gera build de produção
-npm run lint     # verifica tipos TypeScript
-```
+**Node.js não instalou automaticamente no Windows**
+→ Baixe manualmente em **https://nodejs.org** (versão LTS), instale e abra um novo Prompt de Comando.
